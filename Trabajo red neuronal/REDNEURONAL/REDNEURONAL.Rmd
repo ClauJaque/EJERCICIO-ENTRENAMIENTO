@@ -1,0 +1,172 @@
+---
+title: "REDES NEURONALES SIMPLES"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Entrenamiento de una red que calcula el cuadrado de un número.
+
+```{r}
+x = c(0:10)
+y = x^2
+z = c(x,y)
+entrenador = matrix(z, ncol = 2, byrow = FALSE)
+colnames(entrenador)=c("nro", "cuadrado")
+entrenador
+
+
+```
+
+```{r}
+library(neuralnet)
+
+```
+
+# Entrenamiento de la red
+
+```{r}
+library(neuralnet)
+modelo=neuralnet(formula = cuadrado~nro, 
+                data = entrenador, 
+                hidden=30,threshold=0.01 )
+
+```
+# Visualizacion de modelo
+
+```{r}
+print(modelo)
+
+```
+
+# Ploteo de la red neuronal
+
+```{r}
+library(NeuralNetTools)
+library(nnet)
+plot(modelo)
+plotnet(modelo)
+
+```
+
+# Uso de la red para predecir
+```{r}
+test <- data.frame(entrenador = 12)
+ prediccion <- compute(x=modelo, covariate=test)
+ prediccion
+
+ 
+```
+
+# Ejemplo de uso con emprendedores logisticos
+
+```{r}
+library(neuralnet)  # regression
+
+library(nnet) # classification 
+
+library(NeuralNetTools)
+
+library(plyr)
+```
+
+# Carga de datos de emprendimientos logisticos
+
+```{r}
+library(readr)
+
+Categoric <- read_csv("https://themys.sid.uncu.edu.ar/rpalma/R-cran/50_Startups_Categoric_LAC.csv")
+str(Categoric)
+```
+
+# Tratamiento de valores categoricos
+
+```{r}
+tabla1 <- table(Categoric$Pais)
+tabla2 <- table(Categoric$Supervivencia)
+tabla3 <- table(Categoric$Pais,Categoric$Supervivencia)
+plot(tabla1, col=c("red","green","blue"))
+plot(tabla2, col=c("red","green","blue"))
+plot(tabla3, col=c("red","green","blue"))
+
+```
+
+# Histogramas superpuestos
+
+```{r}
+ind_1 <- which(Categoric$Pais=="Colombia")
+p1 <- as.matrix(Categoric[ind_1,5])
+
+ind_2 <- which(Categoric$Pais=="Ecuador")
+p2 <- as.matrix(Categoric[ind_2,5])
+
+ind_3 <- which(Categoric$Pais=="Chile")
+p3 <- as.matrix(Categoric[ind_3,5])
+hp1 <- hist(p1)
+hp2 <- hist(p2)
+hp3 <- hist(p3)
+par(mfrow=c(3,1))
+plot( hp1, col=rgb(0,0,1,1/4), xlim=c(30000,200000),ylim=c(0,5),main="Ecuador")
+plot( hp2, col=rgb(1,0,0,1/4),xlim=c(30000,200000),ylim=c(0,10),main="Colombia") 
+plot( hp3, col=rgb(1,0,0,1/4),xlim=c(30000,200000),ylim=c(0,10),main="Chile") 
+par(mfrow=c(1,3))
+plot( hp1, col=rgb(0,0,1,1/4), xlim=c(30000,200000),ylim=c(0,5),main="Ecuador")
+plot( hp2, col=rgb(1,0,0,1/4),xlim=c(30000,200000),ylim=c(0,10),main="Colombia") 
+plot( hp3, col=rgb(1,0,0,1/4),xlim=c(30000,200000),ylim=c(0,10),main="Chile") 
+pairs(Categoric[ ,1:3])
+boxplot(Categoric[ ,1:3])
+Categoric$Pais <- as.numeric(revalue(Categoric$Pais,
+                          c("Colombia"="0", "Ecuador"="1",
+                            "Chile"="2")))
+
+```
+
+# Cuadro de campos categoricos
+
+```{r}
+Categoric$Supervivencia <- as.numeric(revalue(Categoric$Supervivencia,
+                          c("BankR"="0", "RevEq"="1",
+                            "SpinOff"="2")))
+```
+
+# Profit vs pais
+
+```{r}
+plot(Categoric$Pais, Categoric$Profit)
+```
+
+# Vislaizacion de tablas
+
+```{r}
+library(kableExtra)
+kable(head(Categoric), "pipe")
+```
+
+# Tabla simple
+
+```{r}
+kable(head(Categoric), "simple")
+```
+
+# Normalizacion
+
+```{r}
+normalize<-function(x){
+  return ( (x-min(x))/(max(x)-min(x)))
+}
+
+Startups_norm<-as.data.frame(lapply(Categoric,FUN=normalize))
+summary(Startups_norm$Profit)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
